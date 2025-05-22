@@ -1,6 +1,6 @@
 from typing import Any
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
 from app.core.db import SessionDep
