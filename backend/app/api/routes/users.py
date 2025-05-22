@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user
 from app.core.db import SessionDep
-from app.models import User, UserCreate, UserPublic, UsersPublic, Message
+from app.models import User, UserCreate, UserUpdateMe, UserPublic, UsersPublic, Message
 from app.services.user_services import UserService
 
 router = APIRouter(
@@ -35,6 +35,20 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> UsersPub
 )
 def get_my_info(current_user: User = Depends(get_current_user)) -> UserPublic:
     return current_user
+
+
+@router.patch("/me", response_model=UserPublic)
+def update_user_me(
+    *,
+    session: SessionDep,
+    user_data: UserUpdateMe,
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Update own user.
+    """
+    service = UserService(session)
+    return service.update_current_user(current_user, user_data)
 
 
 @router.delete("/me", response_model=Message)
