@@ -1,9 +1,10 @@
+from typing import Any
 import uuid
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user
 from app.core.db import SessionDep
-from app.models import User, UserCreate, UserPublic, UsersPublic
+from app.models import User, UserCreate, UserPublic, UsersPublic, Message
 from app.services.user_services import UserService
 
 router = APIRouter(
@@ -34,6 +35,14 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> UsersPub
 )
 def get_my_info(current_user: User = Depends(get_current_user)) -> UserPublic:
     return current_user
+
+
+@router.delete("/me", response_model=Message)
+def delete_user_me(
+    session: SessionDep, current_user: User = Depends(get_current_user)
+) -> Any:
+    service = UserService(session)
+    return service.delete_current_user(current_user)
 
 
 @router.get(
