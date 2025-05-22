@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
@@ -35,6 +36,21 @@ def get_my_info(current_user: User = Depends(get_current_user)) -> UserPublic:
     return current_user
 
 
+@router.get(
+    "/{user_id}",
+    response_model=UserPublic,
+    summary="Get user details",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "User details retrieved successfully"},
+        404: {"description": "User not found"},
+    },
+)
+def get_user(session: SessionDep, user_id: uuid.UUID) -> UserPublic:
+    service = UserService(session)
+    return service.get_user_by_id(user_id=user_id)
+
+
 @router.post(
     "/",
     summary="Create a new user",
@@ -49,3 +65,17 @@ def get_my_info(current_user: User = Depends(get_current_user)) -> UserPublic:
 def create_user(session: SessionDep, user_data: UserCreate) -> UserPublic:
     service = UserService(session)
     return service.create_user(user_data=user_data)
+
+
+@router.delete(
+    "/{user_id}",
+    summary="Delete a user",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "User deleted successfully"},
+        404: {"description": "User not found"},
+    },
+)
+def delete_user(session: SessionDep, user_id: int) -> dict:
+    service = UserService(session)
+    return service.delete_user(user_id=user_id)
