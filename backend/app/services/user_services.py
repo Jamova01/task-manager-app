@@ -5,7 +5,15 @@ from fastapi import HTTPException, status
 from sqlmodel import Session, select, func
 from pydantic import EmailStr
 
-from app.models import User, UserPublic, UserUpdateMe, UsersPublic, UserCreate, Message
+from app.models import (
+    UpdatePassword,
+    User,
+    UserPublic,
+    UserUpdateMe,
+    UsersPublic,
+    UserCreate,
+    Message,
+)
 from app.auth.security import verify_password, get_password_hash
 
 MAX_LIMIT = 100
@@ -70,6 +78,21 @@ class UserService:
         self.session.commit()
         self.session.refresh(user)
         return user
+
+    def update_current_user_password(self, user: User, body: UpdatePassword) -> Message:
+        if not verify_password(body.current_password, user.hashed_password):
+            raise HTTPException(status_code=400, detail="Incorrect password")
+
+        if body.current_password == body.new_password:
+            raise HTTPException(
+                status_code=400,
+                detail="New password cannot be the same as the current one",
+            )
+
+        user.hashed_password = get_password_hash(body.new_password)
+        self.session.add(user)
+        self.session.commit()
+        return Message(message="Password updated successfully")
 
     def delete_current_user(self, user: User) -> Message:
         if user.is_superuser:
