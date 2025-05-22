@@ -1,7 +1,8 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 
+from app.auth.dependencies import get_current_user
 from app.core.db import SessionDep
-from app.models import UserCreate, UserPublic, UsersPublic
+from app.models import User, UserCreate, UserPublic, UsersPublic
 from app.services.user_services import UserService
 
 router = APIRouter(
@@ -22,6 +23,16 @@ router = APIRouter(
 def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> UsersPublic:
     service = UserService(session)
     return service.get_users(skip=skip, limit=limit)
+
+
+@router.get(
+    "/me",
+    response_model=UserPublic,
+    summary="Get current user info",
+    status_code=status.HTTP_200_OK,
+)
+def get_my_info(current_user: User = Depends(get_current_user)) -> UserPublic:
+    return current_user
 
 
 @router.post(
