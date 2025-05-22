@@ -75,7 +75,7 @@ const AddItem = () => {
       <DialogTrigger asChild>
         <Button value="add-item" my={4}>
           <FaPlus fontSize="16px" />
-          Add Item
+          Add Task
         </Button>
       </DialogTrigger>
       <DialogContent>
