@@ -9,6 +9,7 @@ from app.models import (
     UpdatePassword,
     User,
     UserPublic,
+    UserRegister,
     UserUpdateMe,
     UsersPublic,
     UserCreate,
@@ -103,6 +104,16 @@ class UserService:
         self.session.delete(user)
         self.session.commit()
         return Message(message="User deleted successfully")
+
+    def register_user(self, user_data: UserRegister) -> User:
+        existing_user = self.get_user_by_email_service(user_data.email)
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="The user with this email already exists in the system",
+            )
+        user_create = UserCreate.model_validate(user_data)
+        return self.create_user(user_create=user_create)
 
     def get_user_by_email_service(self, email: EmailStr) -> Optional[User]:
         return self.session.exec(
