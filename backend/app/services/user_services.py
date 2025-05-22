@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session, select, func
 from pydantic import EmailStr
 
-from app.models import User, UserPublic, UsersPublic, UserCreate, Message
+from app.models import User, UserPublic, UserUpdateMe, UsersPublic, UserCreate, Message
 from app.auth.security import verify_password, get_password_hash
 
 MAX_LIMIT = 100
@@ -56,6 +56,20 @@ class UserService:
         self.session.delete(user)
         self.session.commit()
         return {"detail": f"User with ID {user_id} deleted successfully."}
+
+    def update_current_user(self, user: User, user_data: UserUpdateMe) -> User:
+        if user_data.email:
+            existing_user = self.get_user_by_email_service(email=user_data.email)
+            if existing_user and existing_user.id != user.id:
+                raise HTTPException(
+                    status_code=409, detail="User with this email already exists"
+                )
+        update_data = user_data.model_dump(exclude_unset=True)
+        user.sqlmodel_update(update_data)
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
 
     def delete_current_user(self, user: User) -> Message:
         if user.is_superuser:
