@@ -4,7 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user
 from app.core.db import SessionDep
-from app.models import User, UserCreate, UserUpdateMe, UserPublic, UsersPublic, Message
+from app.models import (
+    UpdatePassword,
+    User,
+    UserCreate,
+    UserUpdateMe,
+    UserPublic,
+    UsersPublic,
+    Message,
+)
 from app.services.user_services import UserService
 
 router = APIRouter(
@@ -49,6 +57,20 @@ def update_user_me(
     """
     service = UserService(session)
     return service.update_current_user(current_user, user_data)
+
+
+@router.patch("/me/password", response_model=Message)
+def update_password_me(
+    *,
+    session: SessionDep,
+    body: UpdatePassword,
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Update own password.
+    """
+    service = UserService(session)
+    return service.update_current_user_password(current_user, body)
 
 
 @router.delete("/me", response_model=Message)
