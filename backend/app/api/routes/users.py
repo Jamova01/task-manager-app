@@ -112,10 +112,10 @@ def update_user(
     *,
     session: SessionDep,
     user_id: uuid.UUID,
-    user_in: UserUpdate,
+    user_data: UserUpdate,
 ) -> Any:
     service = UserService(session)
-    return service.update_user_by_id(user_id, user_in)
+    return service.update_user_by_id(user_id, user_data)
 
 
 @router.post(
