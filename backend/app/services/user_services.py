@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session, select, func
 from pydantic import EmailStr
 
-from app.models import User, UserPublic, UsersPublic, UserCreate
+from app.models import User, UserPublic, UsersPublic, UserCreate, Message
 from app.auth.security import verify_password, get_password_hash
 
 MAX_LIMIT = 100
@@ -56,6 +56,16 @@ class UserService:
         self.session.delete(user)
         self.session.commit()
         return {"detail": f"User with ID {user_id} deleted successfully."}
+
+    def delete_current_user(self, user: User) -> Message:
+        if user.is_superuser:
+            raise HTTPException(
+                status_code=403,
+                detail="Super users are not allowed to delete themselves",
+            )
+        self.session.delete(user)
+        self.session.commit()
+        return Message(message="User deleted successfully")
 
     def get_user_by_email_service(self, email: EmailStr) -> Optional[User]:
         return self.session.exec(
