@@ -2,7 +2,7 @@ from typing import Any
 import uuid
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_active_superuser, get_current_user
 from app.core.db import SessionDep
 from app.models import (
     UpdatePassword,
@@ -28,6 +28,7 @@ router = APIRouter(
     summary="List all users",
     response_model=UsersPublic,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_active_superuser)],
     responses={
         200: {"description": "A list of users"},
     },
@@ -107,6 +108,7 @@ def get_user(session: SessionDep, user_id: uuid.UUID) -> UserPublic:
 @router.patch(
     "/{user_id}",
     response_model=UserPublic,
+    dependencies=[Depends(get_current_active_superuser)],
 )
 def update_user(
     *,
@@ -123,6 +125,7 @@ def update_user(
     summary="Create a new user",
     response_model=UserPublic,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_current_active_superuser)],
     responses={
         201: {"description": "User created successfully"},
         400: {"description": "Bad Request"},
@@ -138,6 +141,7 @@ def create_user(session: SessionDep, user_data: UserCreate) -> UserPublic:
     "/{user_id}",
     summary="Delete a user",
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_active_superuser)],
     responses={
         200: {"description": "User deleted successfully"},
         404: {"description": "User not found"},
