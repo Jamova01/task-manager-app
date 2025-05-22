@@ -10,6 +10,7 @@ from app.models import (
     User,
     UserPublic,
     UserRegister,
+    UserUpdate,
     UserUpdateMe,
     UsersPublic,
     UserCreate,
@@ -59,6 +60,28 @@ class UserService:
         self.session.refresh(new_user)
 
         return new_user
+
+    def update_user_by_id(self, user_id: uuid.UUID, user_data: UserUpdate) -> User:
+        db_user = self.session.get(User, user_id)
+        if not db_user:
+            raise HTTPException(
+                status_code=404,
+                detail="The user with this id does not exist in the system",
+            )
+        if user_data.email:
+            existing_user = self.get_user_by_email_service(email=user_data.email)
+            if existing_user and existing_user.id != user_id:
+                raise HTTPException(
+                    status_code=409, detail="User with this email already exists"
+                )
+
+        update_data = user_data.model_dump(exclude_unset=True)
+        db_user.sqlmodel_update(update_data)
+
+        self.session.add(db_user)
+        self.session.commit()
+        self.session.refresh(db_user)
+        return db_user
 
     def delete_user(self, user_id: uuid.UUID) -> dict:
         user = self._get_user_or_404(user_id)
