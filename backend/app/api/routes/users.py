@@ -87,7 +87,7 @@ def delete_user_me(
 @router.post("/signup", response_model=UserPublic)
 def register_user(session: SessionDep, user_data: UserRegister) -> Any:
     service = UserService(session)
-    return service.register_user(user_data)
+    return service.register_user(user_data=user_data)
 
 
 @router.get(

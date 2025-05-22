@@ -136,7 +136,7 @@ class UserService:
                 detail="The user with this email already exists in the system",
             )
         user_create = UserCreate.model_validate(user_data)
-        return self.create_user(user_create=user_create)
+        return self.create_user(user_data=user_create)
 
     def get_user_by_email_service(self, email: EmailStr) -> Optional[User]:
         return self.session.exec(
