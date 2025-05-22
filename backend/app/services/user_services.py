@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 from fastapi import HTTPException, status
 
@@ -25,7 +26,7 @@ class UserService:
         users = self.session.exec(select(User).offset(skip).limit(limit)).all()
         return UsersPublic(data=users, count=total)
 
-    def get_user_by_id(self, user_id: int) -> UserPublic:
+    def get_user_by_id(self, user_id: uuid.UUID) -> UserPublic:
         user = self._get_user_or_404(user_id)
         return user
 
@@ -50,7 +51,7 @@ class UserService:
 
         return new_user
 
-    def delete_user(self, user_id: int) -> dict:
+    def delete_user(self, user_id: uuid.UUID) -> dict:
         user = self._get_user_or_404(user_id)
         self.session.delete(user)
         self.session.commit()
@@ -71,7 +72,7 @@ class UserService:
 
     # ---------- Private Methods ----------
 
-    def _get_user_or_404(self, user_id: int) -> User:
+    def _get_user_or_404(self, user_id: uuid.UUID) -> User:
         user = self.session.exec(select(User).where(User.id == user_id)).one_or_none()
         if not user:
             raise HTTPException(
