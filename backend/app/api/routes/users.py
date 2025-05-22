@@ -8,6 +8,7 @@ from app.models import (
     UpdatePassword,
     User,
     UserCreate,
+    UserRegister,
     UserUpdateMe,
     UserPublic,
     UsersPublic,
@@ -79,6 +80,12 @@ def delete_user_me(
 ) -> Any:
     service = UserService(session)
     return service.delete_current_user(current_user)
+
+
+@router.post("/signup", response_model=UserPublic)
+def register_user(session: SessionDep, user_data: UserRegister) -> Any:
+    service = UserService(session)
+    return service.register_user(user_data)
 
 
 @router.get(
