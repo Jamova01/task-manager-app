@@ -9,6 +9,7 @@ from app.models import (
     User,
     UserCreate,
     UserRegister,
+    UserUpdate,
     UserUpdateMe,
     UserPublic,
     UsersPublic,
@@ -51,7 +52,7 @@ def update_user_me(
     *,
     session: SessionDep,
     user_data: UserUpdateMe,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> Any:
     """
     Update own user.
@@ -65,7 +66,7 @@ def update_password_me(
     *,
     session: SessionDep,
     body: UpdatePassword,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> Any:
     """
     Update own password.
@@ -101,6 +102,20 @@ def register_user(session: SessionDep, user_data: UserRegister) -> Any:
 def get_user(session: SessionDep, user_id: uuid.UUID) -> UserPublic:
     service = UserService(session)
     return service.get_user_by_id(user_id=user_id)
+
+
+@router.patch(
+    "/{user_id}",
+    response_model=UserPublic,
+)
+def update_user(
+    *,
+    session: SessionDep,
+    user_id: uuid.UUID,
+    user_in: UserUpdate,
+) -> Any:
+    service = UserService(session)
+    return service.update_user_by_id(user_id, user_in)
 
 
 @router.post(
